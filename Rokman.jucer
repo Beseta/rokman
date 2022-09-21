@@ -3,7 +3,7 @@
 <JUCERPROJECT id="TE3ogO" name="Rokman" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               companyName="Beseta" companyCopyright="2022" version="0.0.1"
-              pluginFormats="buildAAX,buildStandalone,buildVST3" pluginManufacturerCode="BSTA"
+              pluginFormats="buildStandalone,buildVST3" pluginManufacturerCode="BSTA"
               pluginCode="Rkmn" pluginAAXCategory="64" cppLanguageStandard="20">
   <MAINGROUP id="xs8Nox" name="Rokman">
     <GROUP id="{CDA0B87B-07CE-D26C-21AE-608F80F17180}" name="Source">
