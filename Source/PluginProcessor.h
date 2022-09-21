@@ -63,6 +63,13 @@ public:
     // Es la variable a la que se cuelgan los datos
     juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameterLayout()};
 private:
+    using Filter = juce::dsp::IIR::Filter<float>;
+    using DistChain = juce::dsp::ProcessorChain<>;
+    using EdgeChain = juce::dsp::ProcessorChain<>;
+    using Cln1Chain = juce::dsp::ProcessorChain<>;
+    using Cln2Chain = juce::dsp::ProcessorChain<>;
+    using MonoChain = juce::dsp::ProcessorChain<Filter, DistChain, EdgeChain, Cln1Chain, Cln2Chain>;
+    MonoChain leftChannel, rightChannel;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RokmanAudioProcessor)
 };
