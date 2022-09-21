@@ -104,7 +104,7 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     auto chainSettings = getChainSettings(apvts);
     
     if (chainSettings.mode == 0 || chainSettings.mode == 1) {
-        freq = 6000.0;
+        freq = 10000.0;
         std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
     } else {
         freq = 5000.0;
@@ -168,7 +168,7 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     
     float freq;
     if (chainSettings.mode == 0 || chainSettings.mode == 1) {
-        freq = 6000.0;
+        freq = 10000.0;
         std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
     } else {
         freq = 5000.0;
