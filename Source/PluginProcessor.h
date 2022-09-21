@@ -69,16 +69,20 @@ public:
     juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameterLayout()};
 private:
     using Filter = juce::dsp::IIR::Filter<float>;
+    using Compressor = juce::dsp::Compressor<float>;
+    
     using DistChain = juce::dsp::ProcessorChain<>;
     using EdgeChain = juce::dsp::ProcessorChain<>;
     using Cln1Chain = juce::dsp::ProcessorChain<>;
     using Cln2Chain = juce::dsp::ProcessorChain<>;
-    using MonoChain = juce::dsp::ProcessorChain<Filter, DistChain, EdgeChain, Cln1Chain, Cln2Chain>;
+    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, DistChain, EdgeChain, Cln1Chain, Cln2Chain>;
     
     MonoChain leftChannel, rightChannel;
     
     enum ChainPositions {
         HPF,
+        Comp,
+        opEQ,
         Distortion,
         Edge,
         Cln1,

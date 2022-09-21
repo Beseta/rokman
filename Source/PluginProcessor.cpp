@@ -105,16 +105,31 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     
     if (chainSettings.mode == 0 || chainSettings.mode == 1) {
         freq = 10000.0;
-        std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
     } else {
         freq = 5000.0;
-        std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
     }
-     
-    auto filterCoeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(sampleRate, freq);
     
-    leftChannel.get<ChainPositions::HPF>().coefficients = *filterCoeff;
-    rightChannel.get<ChainPositions::HPF>().coefficients = *filterCoeff;
+    // HPF 11
+    auto hpf1Coeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(sampleRate, freq);
+    leftChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
+    rightChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
+    
+    // Compressor 12
+    auto comp = juce::dsp::Compressor<float> ();
+    comp.setRatio(2.0);
+    comp.setRelease(50);
+    comp.setAttack(20);
+    comp.setThreshold(20);
+    
+    // HPF 12.A
+    auto opEqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, 2000, 1, 1.5);
+    if (chainSettings.mode == 1 || chainSettings.mode == 2 || chainSettings.mode == 3) {
+        std::cout << "OP EQ ON" << std::endl;
+        leftChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
+        rightChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
+    }
+    
+    
 }
 
 void RokmanAudioProcessor::releaseResources()
@@ -165,20 +180,33 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         buffer.clear (i, 0, buffer.getNumSamples());
     
     auto chainSettings = getChainSettings(apvts);
-    
     float freq;
+    
     if (chainSettings.mode == 0 || chainSettings.mode == 1) {
         freq = 10000.0;
-        std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
     } else {
         freq = 5000.0;
-        std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
     }
-     
-    auto filterCoeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(getSampleRate(), freq);
     
-    leftChannel.get<ChainPositions::HPF>().coefficients = *filterCoeff;
-    rightChannel.get<ChainPositions::HPF>().coefficients = *filterCoeff;
+    // HPF 11
+    auto hpf1Coeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(getSampleRate(), freq);
+    leftChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
+    rightChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
+    
+    // Compressor 12
+    auto comp = juce::dsp::Compressor<float> ();
+    comp.setRatio(2.0);
+    comp.setRelease(50);
+    comp.setAttack(20);
+    comp.setThreshold(20);
+    
+    // HPF 12.A
+    auto opEqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(getSampleRate(), 2000, 1, 1.5);
+    if (chainSettings.mode == 1 || chainSettings.mode == 2 || chainSettings.mode == 3) {
+        std::cout << "OP EQ ON" << std::endl;
+        leftChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
+        rightChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
+    }
     
     juce::dsp::AudioBlock<float> block(buffer);
     
