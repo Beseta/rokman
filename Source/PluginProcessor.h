@@ -9,7 +9,12 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include <string>
+
+struct ChainSettings {
+    int mode {0};
+};
+
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState &apvts);
 
 //==============================================================================
 /**
@@ -69,7 +74,16 @@ private:
     using Cln1Chain = juce::dsp::ProcessorChain<>;
     using Cln2Chain = juce::dsp::ProcessorChain<>;
     using MonoChain = juce::dsp::ProcessorChain<Filter, DistChain, EdgeChain, Cln1Chain, Cln2Chain>;
+    
     MonoChain leftChannel, rightChannel;
+    
+    enum ChainPositions {
+        HPF,
+        Distortion,
+        Edge,
+        Cln1,
+        Cln2
+    };
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RokmanAudioProcessor)
 };

@@ -93,12 +93,28 @@ void RokmanAudioProcessor::changeProgramName (int index, const juce::String& new
 //==============================================================================
 void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    float freq;
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = 1;
     spec.sampleRate = sampleRate;
     leftChannel.prepare(spec);
     rightChannel.prepare(spec);
+    
+    auto chainSettings = getChainSettings(apvts);
+    
+    if (chainSettings.mode == 0 || chainSettings.mode == 1) {
+        freq = 6000.0;
+        std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
+    } else {
+        freq = 5000.0;
+        std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
+    }
+     
+    auto filterCoeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(sampleRate, freq);
+    
+    leftChannel.get<ChainPositions::HPF>().coefficients = *filterCoeff;
+    rightChannel.get<ChainPositions::HPF>().coefficients = *filterCoeff;
 }
 
 void RokmanAudioProcessor::releaseResources()
@@ -147,7 +163,23 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-
+    
+    auto chainSettings = getChainSettings(apvts);
+    
+    float freq;
+    if (chainSettings.mode == 0 || chainSettings.mode == 1) {
+        freq = 6000.0;
+        std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
+    } else {
+        freq = 5000.0;
+        std::cout << "Modo: " << chainSettings.mode << " Freq: " << freq << std::endl;
+    }
+     
+    auto filterCoeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(getSampleRate(), freq);
+    
+    leftChannel.get<ChainPositions::HPF>().coefficients = *filterCoeff;
+    rightChannel.get<ChainPositions::HPF>().coefficients = *filterCoeff;
+    
     juce::dsp::AudioBlock<float> block(buffer);
     
     auto leftBlock = block.getSingleChannelBlock(0);
@@ -186,9 +218,18 @@ void RokmanAudioProcessor::setStateInformation (const void* data, int sizeInByte
     // whose contents will have been created by the getStateInformation() call.
 }
 
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState &apvts) {
+    ChainSettings settings;
+    
+    settings.mode = apvts.getRawParameterValue("Mode")->load();
+    
+    
+    return settings;
+};
+
 juce::AudioProcessorValueTreeState::ParameterLayout RokmanAudioProcessor::createParameterLayout() {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
-    layout.add(std::make_unique<juce::AudioParameterChoice>("mode", "Mode", juce::StringArray {"Dist", "Edge", "Cln1", "Cln2"}, 0));
+    layout.add(std::make_unique<juce::AudioParameterChoice>("Mode", "Mode", juce::StringArray {"Dist", "Edge", "Cln1", "Cln2"}, 0));
     return layout;
 }
 //==============================================================================
