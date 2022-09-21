@@ -124,7 +124,6 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     // HPF 12.A
     auto opEqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, 2000, 1, 1.5);
     if (chainSettings.mode == 1 || chainSettings.mode == 2 || chainSettings.mode == 3) {
-        std::cout << "OP EQ ON" << std::endl;
         leftChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
         rightChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
     }
@@ -203,7 +202,6 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     // HPF 12.A
     auto opEqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(getSampleRate(), 2000, 1, 1.5);
     if (chainSettings.mode == 1 || chainSettings.mode == 2 || chainSettings.mode == 3) {
-        std::cout << "OP EQ ON" << std::endl;
         leftChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
         rightChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
     }
