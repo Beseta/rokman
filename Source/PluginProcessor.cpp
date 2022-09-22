@@ -133,9 +133,14 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     auto mbpfLPCoeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderLowPass(sampleRate, 5000.0);
 
     // LBEQ 15 Coefficients
-    auto lbeqCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 50, 1, 1.5);
+    auto lbeqCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 50, 1, 1.5);
     *leftChannel.get<ChainPositions::LBEQ>().coefficients = *lbeqCoefficients;
     *rightChannel.get<ChainPositions::LBEQ>().coefficients = *lbeqCoefficients;
+    
+    // Complex Filter 17 Coefficients
+    auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 80, 1, 1.5);
+    auto cfLPCoeff = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(4000, sampleRate, 2);
+    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, 1600, 1, 1.5);
     
     switch (chainSettings.mode) {
         case 0:
@@ -249,6 +254,11 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     auto lbeqCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 50, 1, 1.5);
     *leftChannel.get<ChainPositions::LBEQ>().coefficients = *lbeqCoefficients;
     *rightChannel.get<ChainPositions::LBEQ>().coefficients = *lbeqCoefficients;
+    
+    // Complex Filter 17 Coefficients
+    auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 80, 1, 1.5);
+    auto cfLPCoeff = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(4000, getSampleRate(), 2);
+    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), 1600, 1, 1.5);
     
     switch (chainSettings.mode) {
         case 0:
