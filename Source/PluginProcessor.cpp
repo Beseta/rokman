@@ -137,7 +137,6 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::opEQ>(false);
             rightChannel.setBypassed<ChainPositions::opEQ>(false);
-            std::cout << "EDGE: " << leftChannel.isBypassed<ChainPositions::opEQ>() << std::endl;
             break;
             
         case 2:
@@ -239,7 +238,6 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::opEQ>(false);
             rightChannel.setBypassed<ChainPositions::opEQ>(false);
-            std::cout << "EDGE: " << leftChannel.isBypassed<ChainPositions::opEQ>() << std::endl;
             break;
             
         case 2:
