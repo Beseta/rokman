@@ -71,11 +71,7 @@ private:
     using Filter = juce::dsp::IIR::Filter<float>;
     using Compressor = juce::dsp::Compressor<float>;
     
-    using DistChain = juce::dsp::ProcessorChain<>;
-    using EdgeChain = juce::dsp::ProcessorChain<>;
-    using Cln1Chain = juce::dsp::ProcessorChain<>;
-    using Cln2Chain = juce::dsp::ProcessorChain<>;
-    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, DistChain, EdgeChain, Cln1Chain, Cln2Chain>;
+    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, Filter, Filter, Filter>;
     
     MonoChain leftChannel, rightChannel;
     
@@ -83,10 +79,9 @@ private:
         HPF,
         Comp,
         opEQ,
-        Distortion,
-        Edge,
-        Cln1,
-        Cln2
+        MBPF,
+        LPF,
+        ComplexFilter
     };
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RokmanAudioProcessor)

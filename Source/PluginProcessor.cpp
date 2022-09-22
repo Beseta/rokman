@@ -111,8 +111,8 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     
     // HPF 11
     auto hpf1Coeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(sampleRate, freq);
-    leftChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
-    rightChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
+    *leftChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
+    *rightChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
     
     // Compressor 12
     auto comp = juce::dsp::Compressor<float> ();
@@ -121,13 +121,37 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     comp.setAttack(20);
     comp.setThreshold(20);
     
-    // HPF 12.A
-    auto opEqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, 2000, 1, 1.5);
-    if (chainSettings.mode == 1 || chainSettings.mode == 2 || chainSettings.mode == 3) {
-        leftChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
-        rightChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
-    }
+    // HPF 12.A Coefficients
+    auto opEqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(getSampleRate(), 2000, 1, 1.5);
+    *leftChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
+    *rightChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
     
+    switch (chainSettings.mode) {
+        case 0:
+            // HPF 12.A
+            leftChannel.setBypassed<ChainPositions::opEQ>(true);
+            rightChannel.setBypassed<ChainPositions::opEQ>(true);
+            break;
+            
+        case 1:
+            // HPF 12.A
+            leftChannel.setBypassed<ChainPositions::opEQ>(false);
+            rightChannel.setBypassed<ChainPositions::opEQ>(false);
+            std::cout << "EDGE: " << leftChannel.isBypassed<ChainPositions::opEQ>() << std::endl;
+            break;
+            
+        case 2:
+            // HPF 12.A
+            leftChannel.setBypassed<ChainPositions::opEQ>(false);
+            rightChannel.setBypassed<ChainPositions::opEQ>(false);
+            break;
+            
+        case 3:
+            // HPF 12.A
+            leftChannel.setBypassed<ChainPositions::opEQ>(false);
+            rightChannel.setBypassed<ChainPositions::opEQ>(false);
+            break;
+    }
     
 }
 
@@ -193,17 +217,42 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     rightChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
     
     // Compressor 12
-    auto comp = juce::dsp::Compressor<float> ();
+    auto comp = juce::dsp::Compressor<float>();
     comp.setRatio(2.0);
     comp.setRelease(50);
     comp.setAttack(20);
     comp.setThreshold(20);
     
-    // HPF 12.A
+    // HPF 12.A Coefficients
     auto opEqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(getSampleRate(), 2000, 1, 1.5);
-    if (chainSettings.mode == 1 || chainSettings.mode == 2 || chainSettings.mode == 3) {
-        leftChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
-        rightChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
+    leftChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
+    rightChannel.get<ChainPositions::opEQ>().coefficients = *opEqCoeff;
+    
+    switch (chainSettings.mode) {
+        case 0:
+            // HPF 12.A
+            leftChannel.setBypassed<ChainPositions::opEQ>(true);
+            rightChannel.setBypassed<ChainPositions::opEQ>(true);
+            break;
+            
+        case 1:
+            // HPF 12.A
+            leftChannel.setBypassed<ChainPositions::opEQ>(false);
+            rightChannel.setBypassed<ChainPositions::opEQ>(false);
+            std::cout << "EDGE: " << leftChannel.isBypassed<ChainPositions::opEQ>() << std::endl;
+            break;
+            
+        case 2:
+            // HPF 12.A
+            leftChannel.setBypassed<ChainPositions::opEQ>(false);
+            rightChannel.setBypassed<ChainPositions::opEQ>(false);
+            break;
+            
+        case 3:
+            // HPF 12.A
+            leftChannel.setBypassed<ChainPositions::opEQ>(false);
+            rightChannel.setBypassed<ChainPositions::opEQ>(false);
+            break;
     }
     
     juce::dsp::AudioBlock<float> block(buffer);
