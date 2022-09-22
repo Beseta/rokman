@@ -140,31 +140,43 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     // Complex Filter 17 Coefficients
     auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 80, 1, 1.5);
     auto cfLPCoeff = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(4000, sampleRate, 2);
-    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, 1600, 1, 1.5);
+    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, 1600, 1, 0.5);
     
     switch (chainSettings.mode) {
-        case 0:
+        case 0: // Dist
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(true);
             rightChannel.setBypassed<ChainPositions::HBEQ>(true);
+            // LBEQ 15
+            leftChannel.setBypassed<ChainPositions::LBEQ>(false);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(false);
             break;
             
-        case 1:
+        case 1: // Edge
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            // LBEQ 15
+            leftChannel.setBypassed<ChainPositions::LBEQ>(false);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(false);
             break;
             
-        case 2:
+        case 2: // Cln1
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            // LBEQ 15
+            leftChannel.setBypassed<ChainPositions::LBEQ>(false);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(false);
             break;
             
-        case 3:
+        case 3: // Cln2
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            // LBEQ 15
+            leftChannel.setBypassed<ChainPositions::LBEQ>(true);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(true);
             break;
     }
     
