@@ -70,18 +70,19 @@ public:
 private:
     using Filter = juce::dsp::IIR::Filter<float>;
     using Compressor = juce::dsp::Compressor<float>;
-    
-    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, Filter, Filter, Filter>;
+    using MidBandPassFilter = juce::dsp::ProcessorChain<Filter, Filter>;
+    using ComplexFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter>;
+    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, MidBandPassFilter, Filter, ComplexFilter>;
     
     MonoChain leftChannel, rightChannel;
     
     enum ChainPositions {
         HPF,
         Comp,
-        opEQ,
+        HBEQ,
         MBPF,
-        LPF,
-        ComplexFilter
+        LBEQ,
+        CF
     };
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RokmanAudioProcessor)
