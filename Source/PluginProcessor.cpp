@@ -93,7 +93,6 @@ void RokmanAudioProcessor::changeProgramName (int index, const juce::String& new
 //==============================================================================
 void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    float freq;
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = 1;
@@ -103,16 +102,10 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     
     auto chainSettings = getChainSettings(apvts);
     
-    if (chainSettings.mode == 0 || chainSettings.mode == 1) {
-        freq = 10000.0;
-    } else {
-        freq = 5000.0;
-    }
-    
     // HPF 11
-    auto hpf1Coeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(sampleRate, freq);
-    *leftChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
-    *rightChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
+    auto hpf1Coeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(sampleRate, getFrequency(chainSettings));
+    updateCoefficients(leftChannel.get<ChainPositions::HPF>().coefficients, hpf1Coeff);
+    updateCoefficients(rightChannel.get<ChainPositions::HPF>().coefficients, hpf1Coeff);
     
     // Compressor 12
     auto comp = juce::dsp::Compressor<float> ();
@@ -125,8 +118,8 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     
     // HPF 12.A & 13 Coefficients
     auto hbeqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, 4000.0, 1, 1.5);
-    *leftChannel.get<ChainPositions::HBEQ>().coefficients = *hbeqCoeff;
-    *rightChannel.get<ChainPositions::HBEQ>().coefficients = *hbeqCoeff;
+    updateCoefficients(leftChannel.get<ChainPositions::HBEQ>().coefficients, hbeqCoeff);
+    updateCoefficients(rightChannel.get<ChainPositions::HBEQ>().coefficients, hbeqCoeff);
     
     // MBPF 14 Coefficients
     auto mbpfHPCoeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(sampleRate, 800.0);
@@ -134,10 +127,10 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 
     // LBEQ 15 Coefficients
     auto lbeqCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 50, 1, 1.5);
-    *leftChannel.get<ChainPositions::LBEQ>().coefficients = *lbeqCoefficients;
-    *rightChannel.get<ChainPositions::LBEQ>().coefficients = *lbeqCoefficients;
+    updateCoefficients(leftChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients);
+    updateCoefficients(rightChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients); 
     
-    // Complex Filter 17 Coefficients
+    // CF 17 Coefficients
     auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 80, 1, 1.5);
     auto cfLPCoeff = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(4000, sampleRate, 2);
     auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, 1600, 1, 0.5);
@@ -148,8 +141,11 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             leftChannel.setBypassed<ChainPositions::HBEQ>(true);
             rightChannel.setBypassed<ChainPositions::HBEQ>(true);
             // LBEQ 15
-            leftChannel.setBypassed<ChainPositions::LBEQ>(false);
-            rightChannel.setBypassed<ChainPositions::LBEQ>(false);
+            leftChannel.setBypassed<ChainPositions::LBEQ>(true);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            // CF 17
+            leftChannel.setBypassed<ChainPositions::CF>(false);
+            rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
         case 1: // Edge
@@ -157,8 +153,11 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
             // LBEQ 15
-            leftChannel.setBypassed<ChainPositions::LBEQ>(false);
-            rightChannel.setBypassed<ChainPositions::LBEQ>(false);
+            leftChannel.setBypassed<ChainPositions::LBEQ>(true);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            // CF 17
+            leftChannel.setBypassed<ChainPositions::CF>(false);
+            rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
         case 2: // Cln1
@@ -166,8 +165,11 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
             // LBEQ 15
-            leftChannel.setBypassed<ChainPositions::LBEQ>(false);
-            rightChannel.setBypassed<ChainPositions::LBEQ>(false);
+            leftChannel.setBypassed<ChainPositions::LBEQ>(true);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            // CF 17
+            leftChannel.setBypassed<ChainPositions::CF>(false);
+            rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
         case 3: // Cln2
@@ -175,8 +177,11 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
             // LBEQ 15
-            leftChannel.setBypassed<ChainPositions::LBEQ>(true);
-            rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            leftChannel.setBypassed<ChainPositions::LBEQ>(false);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(false);
+            // CF 17
+            leftChannel.setBypassed<ChainPositions::CF>(true);
+            rightChannel.setBypassed<ChainPositions::CF>(true);
             break;
     }
     
@@ -230,18 +235,11 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         buffer.clear (i, 0, buffer.getNumSamples());
     
     auto chainSettings = getChainSettings(apvts);
-    float freq;
-    
-    if (chainSettings.mode == 0 || chainSettings.mode == 1) {
-        freq = 10000.0;
-    } else {
-        freq = 5000.0;
-    }
     
     // HPF 11
-    auto hpf1Coeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(getSampleRate(), freq);
-    leftChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
-    rightChannel.get<ChainPositions::HPF>().coefficients = *hpf1Coeff;
+    auto hpf1Coeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(getSampleRate(), getFrequency(chainSettings));
+    updateCoefficients(leftChannel.get<ChainPositions::HPF>().coefficients, hpf1Coeff);
+    updateCoefficients(rightChannel.get<ChainPositions::HPF>().coefficients, hpf1Coeff);
     
     // Compressor 12
     auto comp = juce::dsp::Compressor<float> ();
@@ -254,49 +252,70 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     
     // HPF 12.A & 13 Coefficients
     auto hbeqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(getSampleRate(), 4000.0, 1, 1.5);
-    *leftChannel.get<ChainPositions::HBEQ>().coefficients = *hbeqCoeff;
-    *rightChannel.get<ChainPositions::HBEQ>().coefficients = *hbeqCoeff;
+    updateCoefficients(leftChannel.get<ChainPositions::HBEQ>().coefficients, hbeqCoeff);
+    updateCoefficients(rightChannel.get<ChainPositions::HBEQ>().coefficients, hbeqCoeff);
     
     // MBPF 14 Coefficients
     auto mbpfHPCoeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(getSampleRate(), 800.0);
     auto mbpfLPCoeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderLowPass(getSampleRate(), 5000.0);
-    
-    
+
     // LBEQ 15 Coefficients
     auto lbeqCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 50, 1, 1.5);
-    *leftChannel.get<ChainPositions::LBEQ>().coefficients = *lbeqCoefficients;
-    *rightChannel.get<ChainPositions::LBEQ>().coefficients = *lbeqCoefficients;
+    updateCoefficients(leftChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients);
+    updateCoefficients(rightChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients);
     
-    // Complex Filter 17 Coefficients
+    // CF 17 Coefficients
     auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 80, 1, 1.5);
     auto cfLPCoeff = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(4000, getSampleRate(), 2);
-    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), 1600, 1, 1.5);
+    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), 1600, 1, 0.5);
     
     switch (chainSettings.mode) {
-        case 0:
+        case 0: // Dist
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(true);
             rightChannel.setBypassed<ChainPositions::HBEQ>(true);
+            // LBEQ 15
+            leftChannel.setBypassed<ChainPositions::LBEQ>(true);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            // CF 17
+            leftChannel.setBypassed<ChainPositions::CF>(false);
+            rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
-        case 1:
+        case 1: // Edge
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            // LBEQ 15
+            leftChannel.setBypassed<ChainPositions::LBEQ>(true);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            // CF 17
+            leftChannel.setBypassed<ChainPositions::CF>(false);
+            rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
-        case 2:
+        case 2: // Cln1
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            // LBEQ 15
+            leftChannel.setBypassed<ChainPositions::LBEQ>(true);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            // CF 17
+            leftChannel.setBypassed<ChainPositions::CF>(false);
+            rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
-        case 3:
+        case 3: // Cln2
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
-//            leftChannel.setBypassed<ChainPositions::Comp>(true);
-//            rightChannel.setBypassed<ChainPositions::Comp>(true);
+            // LBEQ 15
+            leftChannel.setBypassed<ChainPositions::LBEQ>(false);
+            rightChannel.setBypassed<ChainPositions::LBEQ>(false);
+            // CF 17
+            leftChannel.setBypassed<ChainPositions::CF>(true);
+            rightChannel.setBypassed<ChainPositions::CF>(true);
             break;
     }
     
@@ -340,12 +359,21 @@ void RokmanAudioProcessor::setStateInformation (const void* data, int sizeInByte
 
 ChainSettings getChainSettings(juce::AudioProcessorValueTreeState &apvts) {
     ChainSettings settings;
-    
     settings.mode = apvts.getRawParameterValue("Mode")->load();
-    
-    
     return settings;
 };
+
+float RokmanAudioProcessor::getFrequency(const ChainSettings &chainSettings ) {
+    if (chainSettings.mode == 0 || chainSettings.mode == 1) {
+        return 10000.0;
+    } else {
+        return 5000.0;
+    }
+}
+
+void RokmanAudioProcessor::updateCoefficients(Coefficients &old, const Coefficients &replacements) {
+    *old = *replacements;
+}
 
 juce::AudioProcessorValueTreeState::ParameterLayout RokmanAudioProcessor::createParameterLayout() {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
