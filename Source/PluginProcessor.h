@@ -70,9 +70,11 @@ public:
 private:
     using Filter = juce::dsp::IIR::Filter<float>;
     using Compressor = juce::dsp::Compressor<float>;
+    using WaveShaper = juce::dsp::WaveShaper<float>;
+    using Gain = juce::dsp::Gain<float>;
     using MidBandPassFilter = juce::dsp::ProcessorChain<Filter, Filter>;
     using ComplexFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter>;
-    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, MidBandPassFilter, Filter, ComplexFilter>;
+    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, MidBandPassFilter, Gain, WaveShaper, Filter, ComplexFilter>;
     
     MonoChain leftChannel, rightChannel;
     
@@ -81,8 +83,10 @@ private:
         Comp,
         HBEQ,
         MBPF,
+        OPAMP,
+        AD,
         LBEQ,
-        CF
+        CF,
     };
     
     float getFrequency(const ChainSettings &chainSettings);
