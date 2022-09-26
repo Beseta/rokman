@@ -88,7 +88,24 @@ private:
     float getFrequency(const ChainSettings &chainSettings);
     
     using Coefficients = Filter::CoefficientsPtr;
+    
     static void updateCoefficients(Coefficients &old, const Coefficients &replacements);
+    
+    template<typename ChainType> void updateMBPF(ChainType& mbpf, Coefficients hpCoeff, Coefficients lpCoeff) {
+        *mbpf.template get<0>().coefficients = *hpCoeff;
+        *mbpf.template get<1>().coefficients = *lpCoeff;
+        mbpf.template setBypassed<0>(false);
+        mbpf.template setBypassed<1>(false);
+    };
+    
+    template<typename ChainType, typename CoefficientType> void updateCF(ChainType& cf, Coefficients lsCoeff, Coefficients peakCoeff, CoefficientType lpCoeff) {
+        *cf.template get<0>().coefficients = *lsCoeff;
+        *cf.template get<1>().coefficients = *peakCoeff;
+        *cf.template get<2>().coefficients = *lpCoeff[0];
+        cf.template setBypassed<0>(false);
+        cf.template setBypassed<1>(false);
+        cf.template setBypassed<2>(false);
+    };
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RokmanAudioProcessor)
 };
