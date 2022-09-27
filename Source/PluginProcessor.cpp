@@ -108,16 +108,11 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     updateCoefficients(rightChannel.get<ChainPositions::HPF>().coefficients, hpf1Coeff);
     
     // Compressor 12
-    auto comp = juce::dsp::Compressor<float> ();
-    comp.setRatio(2.0);
-    comp.setRelease(50);
-    comp.setAttack(20);
-    comp.setThreshold(20);
-    //    leftChannel.get<ChainPositions::Comp>() = comp;
-    //    rightChannel.get<ChainPositions::Comp>() = comp;
+    updateCompressor(leftChannel.get<ChainPositions::Comp>());
+    updateCompressor(rightChannel.get<ChainPositions::Comp>());
     
     // HPF 12.A & 13 Coefficients
-    auto hbeqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, 4000.0, 1, 1.5);
+    auto hbeqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(sampleRate, 4000.0, 1.30, 4.0);
     updateCoefficients(leftChannel.get<ChainPositions::HBEQ>().coefficients, hbeqCoeff);
     updateCoefficients(rightChannel.get<ChainPositions::HBEQ>().coefficients, hbeqCoeff);
     
@@ -133,30 +128,30 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     
     
     // LBEQ 15 Coefficients
-    auto lbeqCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 50, 1, 1.5);
+    auto lbeqCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 50, 0.6, 4.8);
     updateCoefficients(leftChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients);
     updateCoefficients(rightChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients); 
     
     // OPAMP 16
-    leftChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07);
-    rightChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07);
+    leftChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07f);
+    rightChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07f);
     
     // AD 16
     leftChannel.get<ChainPositions::AD>().functionToUse = [] (float x) {
-        return juce::jlimit (float (-1.4), float (1.4), x);
+        return std::tanh(35*x);
     };
     rightChannel.get<ChainPositions::AD>().functionToUse = [] (float x) {
-        return juce::jlimit (float (-1.4), float (1.4), x);
+        return std::tanh(35*x);
     };
     
     // OPAMP2 16
-    leftChannel.get<ChainPositions::OPAMP2>().setGainDecibels(-33.07);
-    rightChannel.get<ChainPositions::OPAMP2>().setGainDecibels(-33.07);
+    leftChannel.get<ChainPositions::OPAMP2>().setGainDecibels(0.0f);
+    rightChannel.get<ChainPositions::OPAMP2>().setGainDecibels(0.0f);
     
     // CF 17 Coefficients
-    auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 80, 1, 1.5);
+    auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 80, 1, 3.5);
+    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, 1600, 2.80, 0.1);
     auto cfLPCoeff = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(4000, sampleRate, 2);
-    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, 1600, 1, 0.5);
     
     auto& leftCF = leftChannel.get<ChainPositions::CF>();
     auto& rightCF = rightChannel.get<ChainPositions::CF>();
@@ -166,85 +161,141 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     
     switch (chainSettings.mode) {
         case 0: // Dist
+            // HPF 11
+            leftChannel.setBypassed<ChainPositions::HPF>(false);
+            rightChannel.setBypassed<ChainPositions::HPF>(false);
+            
+            // Compressor 12
+            leftChannel.setBypassed<ChainPositions::Comp>(false);
+            rightChannel.setBypassed<ChainPositions::Comp>(false);
+            
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(true);
             rightChannel.setBypassed<ChainPositions::HBEQ>(true);
+            
+            // MBPF 14
+            leftChannel.setBypassed<ChainPositions::MBPF>(false);
+            rightChannel.setBypassed<ChainPositions::MBPF>(false);
+            
             // LBEQ 15
             leftChannel.setBypassed<ChainPositions::LBEQ>(true);
             rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(false);
             rightChannel.setBypassed<ChainPositions::OPAMP>(false);
-            leftChannel.setBypassed<ChainPositions::OPAMP2>(false);
-            rightChannel.setBypassed<ChainPositions::OPAMP2>(false);
+            
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(false);
             rightChannel.setBypassed<ChainPositions::AD>(false);
+            
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
         case 1: // Edge
+            // HPF 11
+            leftChannel.setBypassed<ChainPositions::HPF>(false);
+            rightChannel.setBypassed<ChainPositions::HPF>(false);
+            
+            // Compressor 12
+            leftChannel.setBypassed<ChainPositions::Comp>(false);
+            rightChannel.setBypassed<ChainPositions::Comp>(false);
+            
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            
+            // MBPF 14
+            leftChannel.setBypassed<ChainPositions::MBPF>(false);
+            rightChannel.setBypassed<ChainPositions::MBPF>(false);
+            
             // LBEQ 15
             leftChannel.setBypassed<ChainPositions::LBEQ>(true);
             rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(false);
             rightChannel.setBypassed<ChainPositions::OPAMP>(false);
-            leftChannel.setBypassed<ChainPositions::OPAMP2>(false);
-            rightChannel.setBypassed<ChainPositions::OPAMP2>(false);
+            
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(false);
             rightChannel.setBypassed<ChainPositions::AD>(false);
+            
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
         case 2: // Cln1
+            // HPF 11
+            leftChannel.setBypassed<ChainPositions::HPF>(false);
+            rightChannel.setBypassed<ChainPositions::HPF>(false);
+            
+            // Compressor 12
+            leftChannel.setBypassed<ChainPositions::Comp>(false);
+            rightChannel.setBypassed<ChainPositions::Comp>(false);
+            
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            
+            // MBPF 14
+            leftChannel.setBypassed<ChainPositions::MBPF>(true);
+            rightChannel.setBypassed<ChainPositions::MBPF>(true);
+            
             // LBEQ 15
             leftChannel.setBypassed<ChainPositions::LBEQ>(true);
             rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(true);
             rightChannel.setBypassed<ChainPositions::OPAMP>(true);
-            leftChannel.setBypassed<ChainPositions::OPAMP2>(true);
-            rightChannel.setBypassed<ChainPositions::OPAMP2>(true);
+            
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(true);
             rightChannel.setBypassed<ChainPositions::AD>(true);
+            
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
         case 3: // Cln2
+            // HPF 11
+            leftChannel.setBypassed<ChainPositions::HPF>(false);
+            rightChannel.setBypassed<ChainPositions::HPF>(false);
+            
+            // Compressor 12
+            leftChannel.setBypassed<ChainPositions::Comp>(true);
+            rightChannel.setBypassed<ChainPositions::Comp>(true);
+            
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            
+            // MBPF 14
+            leftChannel.setBypassed<ChainPositions::MBPF>(true);
+            rightChannel.setBypassed<ChainPositions::MBPF>(true);
+            
             // LBEQ 15
             leftChannel.setBypassed<ChainPositions::LBEQ>(false);
             rightChannel.setBypassed<ChainPositions::LBEQ>(false);
+            
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(true);
             rightChannel.setBypassed<ChainPositions::OPAMP>(true);
-            leftChannel.setBypassed<ChainPositions::OPAMP2>(true);
-            rightChannel.setBypassed<ChainPositions::OPAMP2>(true);
+            
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(true);
             rightChannel.setBypassed<ChainPositions::AD>(true);
+            
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(true);
             rightChannel.setBypassed<ChainPositions::CF>(true);
             break;
-    }   
+    }
 }
 
 void RokmanAudioProcessor::releaseResources()
@@ -302,16 +353,11 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     updateCoefficients(rightChannel.get<ChainPositions::HPF>().coefficients, hpf1Coeff);
     
     // Compressor 12
-    auto comp = juce::dsp::Compressor<float> ();
-    comp.setRatio(2.0);
-    comp.setRelease(50);
-    comp.setAttack(20);
-    comp.setThreshold(20);
-    //    leftChannel.get<ChainPositions::Comp>() = comp;
-    //    rightChannel.get<ChainPositions::Comp>() = comp;
+    updateCompressor(leftChannel.get<ChainPositions::Comp>());
+    updateCompressor(rightChannel.get<ChainPositions::Comp>());
     
     // HPF 12.A & 13 Coefficients
-    auto hbeqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(getSampleRate(), 4000.0, 1, 1.5);
+    auto hbeqCoeff = juce::dsp::IIR::Coefficients<float>::makeHighShelf(getSampleRate(), 4000.0, 1.30, 4.0);
     updateCoefficients(leftChannel.get<ChainPositions::HBEQ>().coefficients, hbeqCoeff);
     updateCoefficients(rightChannel.get<ChainPositions::HBEQ>().coefficients, hbeqCoeff);
     
@@ -326,7 +372,7 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     updateMBPF(rightMBPF, mbpfHPCoeff, mbpfLPCoeff);
     
     // LBEQ 15 Coefficients
-    auto lbeqCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 50, 1, 1.5);
+    auto lbeqCoefficients = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 50, 0.6, 4.8);
     updateCoefficients(leftChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients);
     updateCoefficients(rightChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients);
     
@@ -334,24 +380,24 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     // 29.63
     // 3.03
     // 43.07
-    leftChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07);
-    rightChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07);
+    leftChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07f);
+    rightChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07f);
     
     // AD 16
     leftChannel.get<ChainPositions::AD>().functionToUse = [] (float x) {
-        return juce::jlimit (float (-1.4), float (1.4), x);
+        return std::tanh(35*x);
     };
     rightChannel.get<ChainPositions::AD>().functionToUse = [] (float x) {
-        return juce::jlimit (float (-1.4), float (1.4), x);
+        return std::tanh(35*x);
     };
     
     // OPAMP2 16
-    leftChannel.get<ChainPositions::OPAMP2>().setGainDecibels(-33.07);
-    rightChannel.get<ChainPositions::OPAMP2>().setGainDecibels(-33.07);
+    leftChannel.get<ChainPositions::OPAMP2>().setGainDecibels(0.0f);
+    rightChannel.get<ChainPositions::OPAMP2>().setGainDecibels(0.0f);
     
     // CF 17 Coefficients
-    auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 80, 1, 1.5);
-    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), 1600, 1, 0.5);
+    auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 80, 1, 3.5);
+    auto cfPeakCoeff = juce::dsp::IIR::Coefficients<float>::makePeakFilter(getSampleRate(), 1600, 2.8, 0.1);
     auto cfLPCoeff = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(4000, getSampleRate(), 2);
     
     auto& leftCF = leftChannel.get<ChainPositions::CF>();
@@ -362,72 +408,136 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     
     switch (chainSettings.mode) {
         case 0: // Dist
+            // HPF 11
+            leftChannel.setBypassed<ChainPositions::HPF>(false);
+            rightChannel.setBypassed<ChainPositions::HPF>(false);
+            
+            // Compressor 12
+            leftChannel.setBypassed<ChainPositions::Comp>(false);
+            rightChannel.setBypassed<ChainPositions::Comp>(false);
+            
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(true);
             rightChannel.setBypassed<ChainPositions::HBEQ>(true);
+            
+            // MBPF 14
+            leftChannel.setBypassed<ChainPositions::MBPF>(false);
+            rightChannel.setBypassed<ChainPositions::MBPF>(false);
+            
             // LBEQ 15
             leftChannel.setBypassed<ChainPositions::LBEQ>(true);
             rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(false);
             rightChannel.setBypassed<ChainPositions::OPAMP>(false);
+            
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(false);
             rightChannel.setBypassed<ChainPositions::AD>(false);
+            
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
         case 1: // Edge
+            // HPF 11
+            leftChannel.setBypassed<ChainPositions::HPF>(false);
+            rightChannel.setBypassed<ChainPositions::HPF>(false);
+            
+            // Compressor 12
+            leftChannel.setBypassed<ChainPositions::Comp>(false);
+            rightChannel.setBypassed<ChainPositions::Comp>(false);
+            
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            
+            // MBPF 14
+            leftChannel.setBypassed<ChainPositions::MBPF>(false);
+            rightChannel.setBypassed<ChainPositions::MBPF>(false);
+            
             // LBEQ 15
             leftChannel.setBypassed<ChainPositions::LBEQ>(true);
             rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(false);
             rightChannel.setBypassed<ChainPositions::OPAMP>(false);
+            
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(false);
             rightChannel.setBypassed<ChainPositions::AD>(false);
+            
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
         case 2: // Cln1
+            // HPF 11
+            leftChannel.setBypassed<ChainPositions::HPF>(false);
+            rightChannel.setBypassed<ChainPositions::HPF>(false);
+            
+            // Compressor 12
+            leftChannel.setBypassed<ChainPositions::Comp>(false);
+            rightChannel.setBypassed<ChainPositions::Comp>(false);
+            
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            
+            // MBPF 14
+            leftChannel.setBypassed<ChainPositions::MBPF>(true);
+            rightChannel.setBypassed<ChainPositions::MBPF>(true);
+            
             // LBEQ 15
             leftChannel.setBypassed<ChainPositions::LBEQ>(true);
             rightChannel.setBypassed<ChainPositions::LBEQ>(true);
+            
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(true);
             rightChannel.setBypassed<ChainPositions::OPAMP>(true);
+            
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(true);
             rightChannel.setBypassed<ChainPositions::AD>(true);
+            
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
             break;
             
         case 3: // Cln2
+            // HPF 11
+            leftChannel.setBypassed<ChainPositions::HPF>(false);
+            rightChannel.setBypassed<ChainPositions::HPF>(false);
+            
+            // Compressor 12
+            leftChannel.setBypassed<ChainPositions::Comp>(true);
+            rightChannel.setBypassed<ChainPositions::Comp>(true);
+            
             // HPF 12.A
             leftChannel.setBypassed<ChainPositions::HBEQ>(false);
             rightChannel.setBypassed<ChainPositions::HBEQ>(false);
+            
+            // MBPF 14
+            leftChannel.setBypassed<ChainPositions::MBPF>(true);
+            rightChannel.setBypassed<ChainPositions::MBPF>(true);
+            
             // LBEQ 15
             leftChannel.setBypassed<ChainPositions::LBEQ>(false);
             rightChannel.setBypassed<ChainPositions::LBEQ>(false);
+            
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(true);
             rightChannel.setBypassed<ChainPositions::OPAMP>(true);
+            
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(true);
             rightChannel.setBypassed<ChainPositions::AD>(true);
+            
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(true);
             rightChannel.setBypassed<ChainPositions::CF>(true);
