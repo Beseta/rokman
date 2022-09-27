@@ -138,8 +138,8 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     updateCoefficients(rightChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients); 
     
     // OPAMP 16
-    leftChannel.get<ChainPositions::OPAMP>().setGainDecibels(29.63);
-    rightChannel.get<ChainPositions::OPAMP>().setGainDecibels(29.63);
+    leftChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07);
+    rightChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07);
     
     // AD 16
     leftChannel.get<ChainPositions::AD>().functionToUse = [] (float x) {
@@ -148,6 +148,10 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     rightChannel.get<ChainPositions::AD>().functionToUse = [] (float x) {
         return juce::jlimit (float (-1.4), float (1.4), x);
     };
+    
+    // OPAMP2 16
+    leftChannel.get<ChainPositions::OPAMP2>().setGainDecibels(-33.07);
+    rightChannel.get<ChainPositions::OPAMP2>().setGainDecibels(-33.07);
     
     // CF 17 Coefficients
     auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(sampleRate, 80, 1, 1.5);
@@ -171,6 +175,8 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(false);
             rightChannel.setBypassed<ChainPositions::OPAMP>(false);
+            leftChannel.setBypassed<ChainPositions::OPAMP2>(false);
+            rightChannel.setBypassed<ChainPositions::OPAMP2>(false);
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(false);
             rightChannel.setBypassed<ChainPositions::AD>(false);
@@ -189,6 +195,8 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(false);
             rightChannel.setBypassed<ChainPositions::OPAMP>(false);
+            leftChannel.setBypassed<ChainPositions::OPAMP2>(false);
+            rightChannel.setBypassed<ChainPositions::OPAMP2>(false);
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(false);
             rightChannel.setBypassed<ChainPositions::AD>(false);
@@ -207,6 +215,8 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(true);
             rightChannel.setBypassed<ChainPositions::OPAMP>(true);
+            leftChannel.setBypassed<ChainPositions::OPAMP2>(true);
+            rightChannel.setBypassed<ChainPositions::OPAMP2>(true);
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(true);
             rightChannel.setBypassed<ChainPositions::AD>(true);
@@ -225,6 +235,8 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             // OPAMP 16
             leftChannel.setBypassed<ChainPositions::OPAMP>(true);
             rightChannel.setBypassed<ChainPositions::OPAMP>(true);
+            leftChannel.setBypassed<ChainPositions::OPAMP2>(true);
+            rightChannel.setBypassed<ChainPositions::OPAMP2>(true);
             // AD 16
             leftChannel.setBypassed<ChainPositions::AD>(true);
             rightChannel.setBypassed<ChainPositions::AD>(true);
@@ -319,8 +331,11 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     updateCoefficients(rightChannel.get<ChainPositions::LBEQ>().coefficients, lbeqCoefficients);
     
     // OPAMP 16
-    leftChannel.get<ChainPositions::OPAMP>().setGainDecibels(29.63);
-    rightChannel.get<ChainPositions::OPAMP>().setGainDecibels(29.63);
+    // 29.63
+    // 3.03
+    // 43.07
+    leftChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07);
+    rightChannel.get<ChainPositions::OPAMP>().setGainDecibels(43.07);
     
     // AD 16
     leftChannel.get<ChainPositions::AD>().functionToUse = [] (float x) {
@@ -329,6 +344,10 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     rightChannel.get<ChainPositions::AD>().functionToUse = [] (float x) {
         return juce::jlimit (float (-1.4), float (1.4), x);
     };
+    
+    // OPAMP2 16
+    leftChannel.get<ChainPositions::OPAMP2>().setGainDecibels(-33.07);
+    rightChannel.get<ChainPositions::OPAMP2>().setGainDecibels(-33.07);
     
     // CF 17 Coefficients
     auto cfLSCoeff = juce::dsp::IIR::Coefficients<float>::makeLowShelf(getSampleRate(), 80, 1, 1.5);

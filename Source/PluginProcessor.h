@@ -74,7 +74,7 @@ private:
     using Gain = juce::dsp::Gain<float>;
     using MidBandPassFilter = juce::dsp::ProcessorChain<Filter, Filter>;
     using ComplexFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter>;
-    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, MidBandPassFilter, Gain, WaveShaper, Filter, ComplexFilter>;
+    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, MidBandPassFilter, Gain, WaveShaper, Gain, Filter, ComplexFilter>;
     
     MonoChain leftChannel, rightChannel;
     
@@ -85,6 +85,7 @@ private:
         MBPF,
         OPAMP,
         AD,
+        OPAMP2,
         LBEQ,
         CF,
     };
