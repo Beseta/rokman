@@ -116,7 +116,7 @@ private:
         comp.setRatio(20.0);
         comp.setRelease(50.0);
         comp.setAttack(20.0);
-        comp.setThreshold(-35.0);
+        comp.setThreshold(35.0);
     };
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RokmanAudioProcessor)
