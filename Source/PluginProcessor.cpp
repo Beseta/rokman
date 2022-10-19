@@ -165,6 +165,10 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     updateCF(leftCF, cfLSCoeff, cfPeakCoeff, cfLPCoeff);
     updateCF(rightCF, cfLSCoeff, cfPeakCoeff, cfLPCoeff);
     
+    // DELAY 1
+    leftChannel.get<ChainPositions::DEL1>().setDelay(fortyMS);
+    rightChannel.get<ChainPositions::DEL1>().setDelay(fortyMS);
+    
     switch (chainSettings.mode) {
         case 0: // Dist
             // HPF 11
@@ -202,6 +206,10 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
+            
+            // DEL1
+            leftChannel.setBypassed<ChainPositions::DEL1>(false);
+            rightChannel.setBypassed<ChainPositions::DEL1>(false);
             break;
             
         case 1: // Edge
@@ -240,6 +248,10 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
+            
+            // DEL1
+            leftChannel.setBypassed<ChainPositions::DEL1>(false);
+            rightChannel.setBypassed<ChainPositions::DEL1>(false);
             break;
             
         case 2: // Cln1
@@ -278,6 +290,10 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
+            
+            // DEL1
+            leftChannel.setBypassed<ChainPositions::DEL1>(false);
+            rightChannel.setBypassed<ChainPositions::DEL1>(false);
             break;
             
         case 3: // Cln2
@@ -316,6 +332,10 @@ void RokmanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(true);
             rightChannel.setBypassed<ChainPositions::CF>(true);
+            
+            // DEL1
+            leftChannel.setBypassed<ChainPositions::DEL1>(false);
+            rightChannel.setBypassed<ChainPositions::DEL1>(false);
             break;
     }
 }
@@ -434,6 +454,10 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     updateCF(leftCF, cfLSCoeff, cfPeakCoeff, cfLPCoeff);
     updateCF(rightCF, cfLSCoeff, cfPeakCoeff, cfLPCoeff);
     
+    // DELAY 1
+    leftChannel.get<ChainPositions::DEL1>().setDelay(fortyMS);
+    rightChannel.get<ChainPositions::DEL1>().setDelay(fortyMS);
+    
     switch (chainSettings.mode) {
         case 0: // Dist
             // HPF 11
@@ -471,6 +495,10 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
+            
+            // DELAY 1
+            leftChannel.setBypassed<ChainPositions::DEL1>(false);
+            rightChannel.setBypassed<ChainPositions::DEL1>(false);
             break;
             
         case 1: // Edge
@@ -509,6 +537,10 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
+            
+            // DELAY 1
+            leftChannel.setBypassed<ChainPositions::DEL1>(false);
+            rightChannel.setBypassed<ChainPositions::DEL1>(false);
             break;
             
         case 2: // Cln1
@@ -547,6 +579,10 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(false);
             rightChannel.setBypassed<ChainPositions::CF>(false);
+            
+            // DELAY 1
+            leftChannel.setBypassed<ChainPositions::DEL1>(false);
+            rightChannel.setBypassed<ChainPositions::DEL1>(false);
             break;
             
         case 3: // Cln2
@@ -585,6 +621,10 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             // CF 17
             leftChannel.setBypassed<ChainPositions::CF>(true);
             rightChannel.setBypassed<ChainPositions::CF>(true);
+            
+            // DELAY 1
+            leftChannel.setBypassed<ChainPositions::DEL1>(false);
+            rightChannel.setBypassed<ChainPositions::DEL1>(false);
             break;
     }
     

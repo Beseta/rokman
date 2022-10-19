@@ -74,7 +74,8 @@ private:
     using Gain = juce::dsp::Gain<float>;
     using MidBandPassFilter = juce::dsp::ProcessorChain<Filter, Filter>;
     using ComplexFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter>;
-    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, MidBandPassFilter, Gain, WaveShaper, Gain, Filter, ComplexFilter>;
+    using DelayLine = juce::dsp::DelayLine<float>;
+    using MonoChain = juce::dsp::ProcessorChain<Filter, Compressor, Filter, MidBandPassFilter, Gain, WaveShaper, Gain, Filter, ComplexFilter, DelayLine>;
     
     MonoChain leftChannel, rightChannel;
     
@@ -88,6 +89,7 @@ private:
         OPAMP2,
         LBEQ,
         CF,
+        DEL1
     };
     
     float getFrequency(const ChainSettings &chainSettings);
@@ -118,6 +120,12 @@ private:
         comp.setAttack(20.0);
         comp.setThreshold(35.0);
     };
+    
+    double ms2Samples(int ms) {
+        return (getSampleRate() / double(1000)) * ms;
+    }
+    
+    double fortyMS = ms2Samples(40);
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RokmanAudioProcessor)
 };
