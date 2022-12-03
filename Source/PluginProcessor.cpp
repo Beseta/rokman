@@ -388,6 +388,7 @@ void RokmanAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         buffer.clear (i, 0, buffer.getNumSamples());
     
     auto chainSettings = getChainSettings(apvts);
+    // Testing github
     
     // HPF 11
     auto hpf1Coeff = juce::dsp::IIR::Coefficients<float>::makeFirstOrderHighPass(getSampleRate(), getFrequency(chainSettings));
